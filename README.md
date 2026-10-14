@@ -78,7 +78,7 @@ The tool creates one folder per device, named after the device ID. Later backups
 
 Edit `ios-backup.service` before you install it:
 
-- `User=` must be the user that paired the devices and owns the backup folder.
+- `User=` must be the user that paired the devices and owns the backup folder. Replace the `youruser` placeholder.
 - `BACKUP_DIR=` must be the folder from step 2.
 
 ### 7. Install the files
