@@ -60,13 +60,17 @@ Encryption is worth it. Without it, the backup leaves out saved passwords, Wi-Fi
 
 Store the backup password safely. Nothing can restore the backup without it.
 
-### 5. Run the first backup by hand
+### 5. Optional: run the first backup by hand
+
+You can skip this step. Once the service is installed, the first plug-in runs the full backup by itself.
+
+Running it by hand shows the progress live, and it proves the tools work before you add the automatic part:
 
 ```sh
 idevicebackup2 backup /data/_backups/ios
 ```
 
-The first backup is a full copy, so it takes a while. The command ends by itself when the backup is complete. The device may lock during the backup, and that is fine. Keep the cable connected.
+The first backup is a full copy, so it takes a while, whichever way it starts. The command ends by itself when the backup is complete. The device may lock during the backup, and that is fine. Keep the cable connected.
 
 The tool creates one folder per device, named after the device ID. Later backups copy only changes.
 
