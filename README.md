@@ -56,7 +56,7 @@ idevicebackup2 -i encryption on
 
 iOS asks for the passcode, then `idevicebackup2` asks for a new backup password.
 
-Encryption is worth it. Without it, the backup leaves out saved passwords, Wi-Fi settings and Health data.
+Encryption is worth it. Without it, the backup leaves out saved passwords, Wi-Fi settings and Health data. The automatic backup skips a device with encryption off, and logs a warning.
 
 Store the backup password safely. Nothing can restore the backup without it.
 
@@ -130,6 +130,7 @@ On Linux, `idevicebackup2 restore /data/_backups/ios` restores directly. Run `id
 - `90-ios-backup.rules` matches the same devices and adds `ios-backup.service` to the services that systemd starts. It uses `+=`, so the `usbmuxd.service` entry stays.
 - The rule fires on both the `add` and `bind` events. The 60-minute skip stops the second event from running a second backup.
 - The script waits up to 60 seconds for `idevice_id -l` to list the device, because `usbmuxd` needs a moment after plug-in.
+- Before each backup, the script reads `WillEncrypt` with `ideviceinfo`. It skips the device if encryption is off.
 - The service runs as a normal user. The `usbmuxd` socket is open to all users, so no root access is needed for the backup.
 
 ## Troubleshooting
@@ -137,6 +138,9 @@ On Linux, `idevicebackup2 restore /data/_backups/ios` restores directly. Run `id
 | Symptom | Cause and fix |
 |---|---|
 | `no iOS device found` in the log | The device is not paired, or it is locked on a "Trust this computer?" prompt. Repeat step 3. |
+| `Could not connect to lockdownd, error code -19` | The "Trust this computer?" prompt is still waiting on the device. Unlock it, tap Trust, enter the passcode, then plug it in again. |
+| `cannot read device info, is the Trust prompt still open?` | Same cause as error -19. The script could not query the device before the backup. |
+| `backup encryption is off, skipping` | Step 4 was skipped for this device. Run the `idevicebackup2 -u <device id> -i encryption on` command from the log, then plug the device in again. |
 | The service never starts on plug-in | Run `udevadm monitor --property` and plug the device in. Check that `PRODUCT` starts with `5ac/12`. |
 | `backup failed` in the log | Run `idevicebackup2 backup /data/_backups/ios` by hand to see the error. |
 | A new iOS version breaks the backup | `libimobiledevice` may need a newer version than the distro ships. |

@@ -30,6 +30,18 @@ for udid in $udids; do
 		continue
 	fi
 
+	# an unencrypted backup silently leaves out passwords, Wi-Fi and Health data
+	if ! encrypt=$(ideviceinfo -u "$udid" -q com.apple.mobile.backup -k WillEncrypt 2>&1); then
+		echo "$udid: cannot read device info, is the Trust prompt still open? ($encrypt)"
+		status=1
+		continue
+	fi
+	if [ "$(echo "$encrypt" | tr '[:upper:]' '[:lower:]')" != "true" ]; then
+		echo "$udid: backup encryption is off, skipping; run: idevicebackup2 -u $udid -i encryption on"
+		status=1
+		continue
+	fi
+
 	echo "$udid: backup started"
 	if idevicebackup2 -u "$udid" backup "$BACKUP_DIR"; then
 		echo "$udid: backup finished"
