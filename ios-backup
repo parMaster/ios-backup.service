@@ -1,0 +1,42 @@
+#!/bin/sh
+# Back up every connected iOS device with idevicebackup2.
+# Started by ios-backup.service when udev sees an iPhone or iPad plugged in.
+
+BACKUP_DIR="${BACKUP_DIR:-/data/_backups/ios}"
+SKIP_MINUTES="${SKIP_MINUTES:-60}"
+
+# usbmuxd needs a few seconds after plug-in before the device is listed
+udids=""
+for i in $(seq 30); do
+	udids=$(idevice_id -l)
+	[ -n "$udids" ] && break
+	sleep 2
+done
+
+if [ -z "$udids" ]; then
+	echo "no iOS device found"
+	exit 0
+fi
+
+mkdir -p "$BACKUP_DIR"
+
+status=0
+for udid in $udids; do
+	# the udev rule fires on both add and bind, so skip a backup that just finished;
+	# an interrupted backup leaves SnapshotState "uploading" and is not skipped
+	plist="$BACKUP_DIR/$udid/Status.plist"
+	if [ -n "$(find "$plist" -mmin "-$SKIP_MINUTES" 2>/dev/null)" ] && grep -aq finished "$plist"; then
+		echo "$udid: backed up less than $SKIP_MINUTES minutes ago, skipping"
+		continue
+	fi
+
+	echo "$udid: backup started"
+	if idevicebackup2 -u "$udid" backup "$BACKUP_DIR"; then
+		echo "$udid: backup finished"
+	else
+		echo "$udid: backup failed"
+		status=1
+	fi
+done
+
+exit $status

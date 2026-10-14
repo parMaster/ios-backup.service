@@ -1,0 +1,9 @@
+[Unit]
+Description=Back up connected iOS devices
+After=usbmuxd.service
+
+[Service]
+Type=oneshot
+User=gusto
+Environment=BACKUP_DIR=/data/_backups/ios
+ExecStart=/usr/local/bin/ios-backup

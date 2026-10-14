@@ -1,0 +1,4 @@
+# Start ios-backup.service when an iPhone or iPad is plugged in.
+# The match mirrors the usbmuxd rule (39-usbmuxd.rules). "+=" keeps its usbmuxd.service want,
+# and the 90- prefix makes this rule run after it.
+SUBSYSTEM=="usb", ENV{DEVTYPE}=="usb_device", ENV{PRODUCT}=="5ac/12[9a][0-9a-f]/*", ACTION=="add|bind", ENV{SYSTEMD_WANTS}+="ios-backup.service"
